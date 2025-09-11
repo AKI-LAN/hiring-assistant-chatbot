@@ -10,7 +10,7 @@ You are a hiring assistant. Collect the following:
 7. Tech Stack
 """
 
-question_grn_prompt = """
+question_gen_prompt = """
 Candidate tech stck : {tech_stack}
 Generate 5 interview-style technical questions for each technology.
 """

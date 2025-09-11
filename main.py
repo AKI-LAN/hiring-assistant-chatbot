@@ -1,6 +1,6 @@
 import streamlit as st
 from utils import get_llm_response
-from prompts import candidate_info_prompt, question_grn_prompt
+from prompts import candidate_info_prompt, question_gen_prompt
 
 st.set_page_config(page_title="TalentScout Hiring Assistant", layout="centered")
 st.title("TalentScout Hiring Assistant")
