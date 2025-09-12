@@ -1,41 +1,39 @@
-from transformers import pipeline
-from prompts import question_gen_prompt
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
-try:
-    import torch
-    if torch.cuda.is_available():
-        device = 0  
-    else:
-        device = -1  
-except Exception:
-    device = -1
+MODEL_NAME = "google/flan-t5-base"
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME)
 
+def generate_questions_for_stack(tech_stack: str):
+    if not tech_stack:
+        return []
 
-generator = pipeline('text2text-generation', model='google/flan-t5-base')
+    techs = [t.strip() for t in tech_stack.split(",") if t.strip()]
+    questions = []
 
-def generate_questions_for_stack( tech_stack: str) -> list[str]:
+    for tech in techs:
+        prompt = f"""
+You are a senior technical interviewer for a software engineering candidate.
 
-        """
-        Generate 3 questions for each technology in the stack, one by one.
-        Returns a list of individual questions.
-        """
-        techs = [t.strip() for t in tech_stack.split(",") ]
-        output = []
-        for tech in techs:
-            prompt = (
-            f"You are TalentScout, an AI Hiring Assistant.\n"
-            f"Generate exactly 3 interview-style technical questions for {tech}.\n"
-            "Return only the questions, numbered 1 to 3."
-            )
-       
-            result = generator(prompt, max_length=200, num_return_sequences=1)
-            text = result[0]["generated_text"].strip()
-            
-            lines = [line.strip() for line in text.split("\n") if line.strip()]
-            numbered = [line for line in lines if line[0].isdigit()]
-            cleaned = numbered[:3]
-            
-            for q in cleaned:
-                output.append(f"{tech}: {q}")
-        
-        return output
+Generate 3 detailed, practical technical interview questions for {tech}. 
+- Include coding, data structures, framework usage, tools, or real-world scenarios.
+- Number the questions 1, 2, 3.
+- Only output questions. Do not output instructions or placeholder text.
+- Example for {tech}:
+1. Explain a real-world use case of {tech} and write a small code snippet or query if applicable.
+2. Describe a common challenge when using {tech} and how to solve it.
+3. Give a technical problem that tests the candidate's understanding of {tech}.
+
+Now generate 3 interview questions specifically for {tech}:
+"""
+        inputs = tokenizer(prompt, return_tensors="pt")
+        outputs = model.generate(**inputs, max_new_tokens=250)
+        text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+        # Split by numbers or lines
+        for line in text.split("\n"):
+            line = line.strip()
+            if line and any(char.isalnum() for char in line):
+                questions.append(f"{tech}: {line}")
+
+    return questions
