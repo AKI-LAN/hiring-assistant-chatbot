@@ -1,25 +1,18 @@
-import os 
-from openai import OpenAI
-from dotenv import load_dotenv
+from transformers import pipeline
 from prompts import question_gen_prompt
 
-load_dotenv()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+generator = pipeline('text-generation', model='distilgpt2')
 
 def get_llm_response(user_input, tech_stack=None):
-    """Send user input to LLM and return chatbot response"""
-    messages = [{"role":"system","content":"You are a hiring assitant chatbot."},{"role":"user","content": user_input}]
-
+    """
+    Generate a chatbot-like response using Hugging Face DistilGPT-2 model.
+    If tech_stack is provided, include it in the prompt for generating technical questions.
+    """
+    prompt = user_input
 
     if tech_stack:
-        messages.append({
-            "role":"user",
-            "content": question_gen_prompt.format(tech_stack=tech_stack)
-        })
+        prompt += "\n" + question_gen_prompt.format(tech_stack=tech_stack)
 
-    response = client.chat.completions.create(
-        model = "gpt-4o-mini",
-        messages = messages
-    )
+    response = generator(prompt, max_length=150, num_return_sequences=1)
 
-    return response.choices[0].message.content
+    return response[0]['generated_text']
