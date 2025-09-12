@@ -1,39 +1,55 @@
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
+import torch
 
-MODEL_NAME = "google/flan-t5-base"
+MODEL_NAME ="unsloth/llama-3-8b-instruct"
+
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME)
+model = AutoModelForCausalLM.from_pretrained(
+    MODEL_NAME,
+    torch_dtype=torch.float16,
+    device_map="auto"
+    )
+
+pipe = pipeline(
+    "text-generation",
+    model=model,
+    tokenizer=tokenizer,
+    max_new_tokens=256,
+    temperature=0.7,
+    top_p=0.9,
+)
 
 def generate_questions_for_stack(tech_stack: str):
-    if not tech_stack:
-        return []
 
     techs = [t.strip() for t in tech_stack.split(",") if t.strip()]
     questions = []
 
     for tech in techs:
-        prompt = f"""
-You are a senior technical interviewer for a software engineering candidate.
-
-Generate 3 detailed, practical technical interview questions for {tech}. 
-- Include coding, data structures, framework usage, tools, or real-world scenarios.
+        prompt =  f"""
+You are a senior technical interviewer.
+Generate 3 challenging, practical interview questions for a candidate skilled in {tech}.
+- Ask about coding, system design, debugging, optimization, or real-world usage.
+- Be specific and technical.
 - Number the questions 1, 2, 3.
-- Only output questions. Do not output instructions or placeholder text.
-- Example for {tech}:
-1. Explain a real-world use case of {tech} and write a small code snippet or query if applicable.
-2. Describe a common challenge when using {tech} and how to solve it.
-3. Give a technical problem that tests the candidate's understanding of {tech}.
+Only output the questions.
 
-Now generate 3 interview questions specifically for {tech}:
+Examples:
+Python:
+1. How does Python's Global Interpreter Lock (GIL) affect multithreading performance?
+2. Write a Python function to reverse a linked list.
+3. Explain Python's garbage collection mechanism and how it manages memory.
+
+Now generate 3 interview questions for {tech}:
 """
-        inputs = tokenizer(prompt, return_tensors="pt")
-        outputs = model.generate(**inputs, max_new_tokens=250)
-        text = tokenizer.decode(outputs[0], skip_special_tokens=True)
-
-        # Split by numbers or lines
-        for line in text.split("\n"):
+        result = pipe(prompt)[0]["generated_text"]
+        seen = set()
+        for line in result.split("\n"):
             line = line.strip()
-            if line and any(char.isalnum() for char in line):
-                questions.append(f"{tech}: {line}")
+            if line and line[0] in "123" and line[1] == ".":
+                q = line[2:].strip()
+                if q not in seen:
+                    questions.append(f"{tech}: {q}")
+                    seen.add(q)
+
 
     return questions
