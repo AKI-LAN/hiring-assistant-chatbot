@@ -14,20 +14,24 @@ except Exception:
 generator = pipeline('text2text-generation', model='google/flan-t5-base')
 
 def generate_questions_for_stack( tech_stack: str) -> str:
+
         """
-        Use the instruction prompt from prompts.py to generate interview questions.
-        Returns a cleaned string.
+        Generate 3 questions for each technology in the stack, one by one.
         """
-        prompt = question_gen_prompt.format(tech_stack = tech_stack)
-    
-        final_prompt = (
-            "You are TalentScout, an AI Hiring Assistant.\n"
-        "For each technology listed, generate exactly 3 numbered interview questions.\n"
-        "Format strictly like this:\n"
-        "Python:\n1. ...\n2. ...\n3. ...\n\nSQL:\n1. ...\n2. ...\n3. ...\n\n"
-        "Keep questions short and job-relevant. Do not generate extra items or commentary.\n\n"
-        f"{prompt}"
-    )
-        result = generator(final_prompt, max_length=200, num_return_sequences=1)
-        return result[0]["generated_text"].strip()
-      
+        techs = [t.strip() for t in tech_stack.split(",") if t.strip()]
+        output = []
+        for tech in techs:
+            prompt = (
+            f"You are TalentScout, an AI Hiring Assistant.\n"
+            f"Generate exactly 3 interview-style technical questions for {tech}.\n"
+            "Return only the questions, numbered 1 to 3.\n"
+            )
+       
+            result = generator(prompt, max_length=200, num_return_sequences=1)
+            return result[0]["generated_text"].strip()
+            
+            lines = [line.strip() for line in text.split("\n") if line.strip()]
+            cleaned = "\n".join(lines[:3])
+            output.append(f"### {tech}\n{cleaned}")
+        
+        return "\n\n".join(output)
