@@ -1,7 +1,7 @@
 from transformers import pipeline
 from prompts import question_gen_prompt
 
-generator = pipeline('text-generation', model='distilgpt2')
+generator = pipeline('text2text-generation', model='google/flan-t5-base')
 
 def get_llm_response(user_input, tech_stack=None):
     """
