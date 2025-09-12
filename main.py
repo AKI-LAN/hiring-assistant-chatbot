@@ -2,11 +2,11 @@ import streamlit as st
 from utils import get_llm_response
 from prompts import candidate_info_prompt
 st.set_page_config(page_title="TalentScout Hiring Assistant", layout="centered")
-st.title("🤖 TalentScout Hiring Assistant")
+st.title("TalentScout Hiring Assistant")
 
 if "chat" not in st.session_state:
-    st.session_state.chat = []
-
+    st.session_state.chat = [("Bot", "Hi! I'm TalentScout, your hiring assistant. Let's get started.")]
+    st.session_state.chat.append(("Bot", candidate_info_prompt.strip()))
 
 user_input = st.text_input("You: ")
 
