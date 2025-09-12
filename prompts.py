@@ -1,16 +1,17 @@
 
 candidate_info_prompt = """
-You are a hiring assistant. Collect the following:
+You are a hiring assistant. Collect candidate details step by step:
 1. Full Name
 2. Email Address
 3. Phone Number
 4. Years of Ecperience
 5. Desired Position
 6. Current Location
-7. Tech Stack
+7. Tech Stack(languages, frameworks, tools,databases)
 """
 
 question_gen_prompt = """
-Candidate tech stck : {tech_stack}
+Candidate tech stck : {tech_stack}.
 Generate 5 interview-style technical questions for each technology.
+Ensure questions are practical and job-relevant.
 """
