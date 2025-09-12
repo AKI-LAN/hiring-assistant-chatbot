@@ -21,12 +21,13 @@ def generate_questions_for_stack( tech_stack: str) -> str:
         prompt = question_gen_prompt.format(tech_stack = tech_stack)
     
         final_prompt = (
-            "You are TalentScout, an AI hiring assistant.\n"
-            "Respond ONLY with the requested interview questions.\n\n"
-            f"{prompt}\n\n"
-            "Output format example:\n"
-            "Python:\n1. ...\n2. ...\n\nSQL:\n1. ...\n2. ...\n"
-        )
+            "You are TalentScout, an AI Hiring Assistant.\n"
+        "For each technology listed, generate exactly 3 numbered interview questions.\n"
+        "Format strictly like this:\n"
+        "Python:\n1. ...\n2. ...\n3. ...\n\nSQL:\n1. ...\n2. ...\n3. ...\n\n"
+        "Keep questions short and job-relevant. Do not generate extra items or commentary.\n\n"
+        f"{prompt}"
+    )
         result = generator(final_prompt, max_length=200, num_return_sequences=1)
-        text = result[0]['generated_text'].strip()
-        return text
+        return result[0]["generated_text"].strip()
+      
