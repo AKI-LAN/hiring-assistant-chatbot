@@ -1,17 +1,15 @@
 
-candidate_info_prompt = """
-You are a hiring assistant. Collect candidate details step by step:
-1. Full Name
-2. Email Address
-3. Phone Number
-4. Years of Ecperience
-5. Desired Position
-6. Current Location
-7. Tech Stack(languages, frameworks, tools,databases)
-"""
-
+candidate_questions = [
+    "Full Name",
+    "Email Address",
+    "Phone Number",
+    "Years of Experience",
+    "Desired Position",
+    "Current Location",
+    "Tech Stack (languages, frameworks, databases, tools)"
+]
 question_gen_prompt = """
 Candidate tech stck : {tech_stack}.
-Generate 5 interview-style technical questions for each technology.
-Ensure questions are practical and job-relevant.
+You are an interviewer. For each technology listed, generate 3 interview-style technical questions.
+Return a clear numbered list grouped by technology. Keep questions concise and practical.
 """
